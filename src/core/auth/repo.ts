@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-import type { User } from "../modules/auth/auth.types";
+import type { User } from "../../modules/auth/auth.types";
 
 
 const prisma = new PrismaClient();

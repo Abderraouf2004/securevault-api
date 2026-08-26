@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { tryCatch } from "../errors/try-catch";
+import { tryCatch } from "../../errors/try-catch";
 import { UserService } from "./service";
 
 
