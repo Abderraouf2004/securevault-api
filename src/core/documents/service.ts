@@ -18,7 +18,7 @@ export const DocumentService = {
     return validateObject<Document.DTO>(DocumentDTOSchema, update);
   },
   delete: async (id: string) => {
-    const deleteDocument = await DocumentRepo.delete(id);
+    await DocumentRepo.delete(id);
     return { success: true }; 
   }
 };
