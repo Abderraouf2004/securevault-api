@@ -4,6 +4,7 @@ import {CreateDocumentSchema, documentIdParamSchema, UpdateDocumentSchema} from 
 import { DocumentController } from "../../core/documents/controller";
 import { upload } from "../../modules/documents/document.upload";
 import { detectFileType } from "../../modules/documents/document.file-validator";
+import { saveUploadedFile } from "../../modules/documents/document.storage";
 
 const document = Router();
 
@@ -16,7 +17,7 @@ document.post("/",
 document.post(
   "/upload",
   upload.single("file"),
-  (req, res) => {
+  async (req, res) => {
     if (!req.file) {
       return res.status(400).json({
         message: "File is required",
@@ -31,11 +32,19 @@ document.post(
       });
     }
 
+    const savedFile = await saveUploadedFile(
+      req.file.buffer,
+      detectedType
+    );
+
     return res.status(201).json({
-      message: "File validated successfully",
-      originalName: req.file.originalname,
-      detectedType,
-      size: req.file.size,
+      message: "File uploaded successfully",
+      file: {
+        originalName: req.file.originalname,
+        storedName: savedFile.storedName,
+        mimeType: detectedType,
+        size: req.file.size,
+      },
     });
   }
 );
