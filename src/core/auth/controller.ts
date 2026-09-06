@@ -8,9 +8,14 @@ export const UserController = {
           const data = await UserService.signup(req.body);
           res.status(201).json({ data, message: "signup successfully" });
      }),
-
+     signin: tryCatch(async (req: Request, res: Response) => {
+          const data = await UserService.signin(req.body);
+          res.status(200).json({ data, message: "signin successfully" });
+     }),
     
 
  
    
 };
+
+

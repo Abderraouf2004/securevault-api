@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-
 import type { User } from "../../modules/auth/auth.types";
 
 
@@ -14,10 +13,18 @@ export const UserRepo = {
       },
     });
    
-
+    if (!signup) throw new Error("Failed to sign up user");
     return signup;
 
   },
+  readByEmail: async (email: string) => {
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+    if (!user) return null;
+    return user;
+  },
+
 
 
 
