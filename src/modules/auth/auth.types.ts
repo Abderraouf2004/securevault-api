@@ -10,13 +10,13 @@ export namespace User {
     export interface signup {
     email: string;
     password: string;
-    role: string;
+    roleId: string;
     } 
 
     export interface DTO {
     id: string;
     email: string;
-    role:string;
+    role: "USER" | "ADMIN";
     updatedAt: Date;
     createdAt: Date;
   }

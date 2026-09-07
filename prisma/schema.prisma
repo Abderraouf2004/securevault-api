@@ -13,13 +13,22 @@ datasource db {
 }
 
 model User {
-  id        String     @id @default(uuid())
-  email     String     @unique
+  id        String   @id @default(uuid())
+  email     String   @unique
   password  String
-  role      String     @default("USER")
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  document  Document[]
+  roleId    String
+  role      Role     @relation(fields: [roleId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  document Document[]
+}
+
+model Role {
+  id   String @id @default(uuid())
+  name String @unique
+
+  users User[]
 }
 
 model Document {
@@ -29,5 +38,6 @@ model Document {
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  owner       User     @relation(fields: [ownerId], references: [id])
+
+  owner User @relation(fields: [ownerId], references: [id])
 }
