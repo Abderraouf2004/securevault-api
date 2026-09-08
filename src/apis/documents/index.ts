@@ -5,6 +5,7 @@ import { DocumentController } from "../../core/documents/controller";
 import { upload } from "../../modules/documents/document.upload";
 import { detectFileType } from "../../modules/documents/document.file-validator";
 import { saveUploadedFile } from "../../modules/documents/document.storage";
+import { authMiddleware } from "../../middleware/auth";
 
 const document = Router();
 
@@ -50,6 +51,7 @@ document.post(
 );
 
 document.get("/",
+    authMiddleware,
     DocumentController.getAll
 );
 

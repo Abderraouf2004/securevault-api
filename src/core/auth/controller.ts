@@ -67,8 +67,8 @@ export const AuthController = {
              if (ttl > 0) { 
                const redis = redisService.getClient();
                 await redis.setEx( `blacklist:${token}`, ttl, "blacklisted", );
-                }
-                 res.status(200).json({ message: "Sign Out successfully", });
+             }
+            res.status(200).json({ message: "Sign Out successfully", });
      }),
      
 
