@@ -10,6 +10,7 @@ import { authMiddleware } from "../../middleware/auth";
 const document = Router();
 
 document.post("/", 
+     authMiddleware,
     validateRequestInput({ body: CreateDocumentSchema }),
     DocumentController.create,
 
@@ -18,6 +19,7 @@ document.post("/",
 document.post(
   "/upload",
   upload.single("file"),
+  authMiddleware,
   async (req, res) => {
     if (!req.file) {
       return res.status(400).json({
@@ -56,11 +58,13 @@ document.get("/",
 );
 
 document.put("/:id",
+        authMiddleware,
     validateRequestInput({ params: documentIdParamSchema ,body: UpdateDocumentSchema}),
     DocumentController.update
 );
 
 document.delete("/:id",
+    authMiddleware,
     validateRequestInput({ params: documentIdParamSchema }),
     DocumentController.delete
 );
