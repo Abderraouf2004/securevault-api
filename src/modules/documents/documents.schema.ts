@@ -1,6 +1,6 @@
 import Joi from "joi";
 
-export const documentIdParamSchema = Joi.object({
+export const IdParamSchema = Joi.object({
     id: Joi.string().uuid().required(),
 });
 

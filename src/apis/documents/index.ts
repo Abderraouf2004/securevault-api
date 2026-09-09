@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validateRequestInput } from "../../errors/validate-request-input";
-import {CreateDocumentSchema, documentIdParamSchema, UpdateDocumentSchema} from "../../modules/documents/documents.schema";
+import {CreateDocumentSchema, IdParamSchema, UpdateDocumentSchema} from "../../modules/documents/documents.schema";
 import { DocumentController } from "../../core/documents/controller";
 import { upload } from "../../modules/documents/document.upload";
 import { detectFileType } from "../../modules/documents/document.file-validator";
@@ -57,15 +57,23 @@ document.get("/",
     DocumentController.getAll
 );
 
+document.get("/:id",
+    authMiddleware,
+    validateRequestInput({ params: IdParamSchema }),
+    DocumentController.getById
+);
+
 document.put("/:id",
-        authMiddleware,
-    validateRequestInput({ params: documentIdParamSchema ,body: UpdateDocumentSchema}),
+    authMiddleware,
+    validateRequestInput({ params: IdParamSchema ,body: UpdateDocumentSchema}),
     DocumentController.update
 );
 
+
+
 document.delete("/:id",
     authMiddleware,
-    validateRequestInput({ params: documentIdParamSchema }),
+    validateRequestInput({ params: IdParamSchema }),
     DocumentController.delete
 );
 

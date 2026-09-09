@@ -8,15 +8,10 @@ export const authMiddleware = async (
   _res: Response,
   next: NextFunction,
 ) => {
-  const authHeader = req.headers["authorization"] as string | undefined;
+  const authHeader = req.headers["authorization"] as string ;
+  // const userId = req.headers["x-user-id"] as string;
+  // const userRole = req.headers["x-user-role"] as string;
 
-  if (!authHeader) {
-    throw new ApiError({
-      code: "UNAUTHORIZED",
-      message: "Token missing",
-      details: "Please provide a valid token in the Authorization header.",
-    });
-  }
 
   const parts = authHeader.trim().split(/\s+/);
 
@@ -50,6 +45,13 @@ export const authMiddleware = async (
   };
 
   req.token = token;
+  //  if (userId && userRole) {
+  //   req.user = { id: userId, roleId: userRole };
+  // }
+
+  // if (authHeader) {
+  //   req.token = authHeader;
+  // }
 
   next();
 };

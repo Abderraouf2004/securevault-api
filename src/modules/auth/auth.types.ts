@@ -15,8 +15,10 @@ export namespace User {
 
     export interface DTO {
     id: string;
+    name: string;
     email: string;
-    role: "USER" | "ADMIN";
+    roleId: string;
+    roleName: string;
     updatedAt: Date;
     createdAt: Date;
   }
