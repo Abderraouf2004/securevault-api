@@ -8,6 +8,7 @@ export namespace User {
 
 
     export interface signup {
+    name: string;
     email: string;
     password: string;
     roleId: string;

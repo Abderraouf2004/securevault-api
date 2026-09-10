@@ -8,6 +8,7 @@ export const AuthRepo = {
   signup: async (data: User.signup) => {
      const user = await prisma.user.create({
       data: {
+        name: data.name,
         email: data.email,
         password: data.password,
         roleId: data.roleId,

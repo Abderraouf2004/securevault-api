@@ -9,6 +9,13 @@ export const authMiddleware = async (
   next: NextFunction,
 ) => {
   const authHeader = req.headers["authorization"] as string ;
+  if (!authHeader) {
+  throw new ApiError({
+    code: "UNAUTHORIZED",
+    message: "Authentication required",
+    details: "Authorization header is missing.",
+  });
+}
   // const userId = req.headers["x-user-id"] as string;
   // const userRole = req.headers["x-user-role"] as string;
 
