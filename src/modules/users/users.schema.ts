@@ -13,5 +13,5 @@ export const UserDTOSchema = Joi.object({
 }).options({ stripUnknown: true });
 
 export const UpdateUserRoleSchema = Joi.object({
-  role: Joi.string().valid("user", "admin").required(),
+  role: Joi.string().valid("USER", "ADMIN").required(),
 }).options({ stripUnknown: true });

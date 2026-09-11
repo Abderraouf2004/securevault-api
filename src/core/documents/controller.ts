@@ -5,7 +5,7 @@ import { DocumentService } from "./service";
 
 export const DocumentController = {
      create: tryCatch(async (req: Request, res: Response) => {
-          const data = await DocumentService.create(req.body, req.user?.id as string);
+          const data = await DocumentService.create(req.body, req.file!, req.user?.id as string);
           res.status(201).json({ data, message: "Document created successfully" });
      }),
      getAll: tryCatch(async (req: Request, res: Response) => {

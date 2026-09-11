@@ -9,7 +9,7 @@ const auth = Router();
 auth.get("/verify", AuthController.verifyToken);
 
 auth.get("/signout", AuthController.signOut);
-
+auth.post("/refresh", AuthController.refresh);
 
 auth.post("/signup", 
     validateRequestInput({ body: signupSchema }),

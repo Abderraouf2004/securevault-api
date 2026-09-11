@@ -69,9 +69,16 @@ export const AuthService = {
           "The email provided is already associated with an existing account.",
       });
     }
+
+    const role = await AuthRepo.findRoleByName("USER");
+
+    if (!role) {
+        throw new Error("Default USER role not found");
+    }
+
     const hashedPassword = await hash.hashPassword(data.password);
 
-   const user = await AuthRepo.signup({ ...data, password: hashedPassword });
+    const user = await AuthRepo.signup({ ...data, password: hashedPassword ,roleId: role.id});
     const payload = {
       id: user.id,
       roleId: user.roleId,
@@ -88,10 +95,10 @@ export const AuthService = {
 
   signin: async (data: User.signin) => {
     const user = await AuthRepo.readByEmail(data.email);
-    if (!user) {
+    if (!user || user.password == null) {
       throw new ApiError({
         code: "NOT_FOUND",
-        message: "No user with this email",
+        message: "No user with this email or no password",
         details: "The email provided does not match any user in our records.",
       });
     }
@@ -156,13 +163,13 @@ export const AuthService = {
     };
   },
 
-
   signOut: async (authHeader: string | undefined) => {
   if (!authHeader) {
     throw new ApiError({
       code: "UNAUTHORIZED",
       message: "Token missing",
-      details: "Please provide a valid token in the Authorization header.",
+      details:
+        "Please provide a valid token in the Authorization header.",
     });
   }
 
@@ -177,9 +184,7 @@ export const AuthService = {
   }
 
   const token = parts[1] as string;
-
   const decoded = jwt.decode(token) as { exp?: number } | null;
-
   const ttl = decoded?.exp
     ? decoded.exp - Math.floor(Date.now() / 1000)
     : 0;

@@ -11,8 +11,14 @@ export namespace User {
     name: string;
     email: string;
     password: string;
-    roleId: string;
     } 
+
+    export interface createUser {
+    name: string;
+    email: string;
+    password: string;
+    roleId: string;
+    }
 
     export interface DTO {
     id: string;

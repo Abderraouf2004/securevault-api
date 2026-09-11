@@ -8,14 +8,19 @@ const prisma = new PrismaClient();
 
 export const DocumentRepo = {
     create: async (data: Document.Create, userId: string) => {
-     const create = await prisma.document.create({
+      const document = await prisma.document.create({
       data: {
         title: data.title,
         description: data.description,
         ownerId: userId,
+        originalName: data.originalName,
+        storageKey: data.storageKey,
+        mimeType: data.mimeType,
+        size: data.size,
       },
-     });
-     return create;
+    });
+
+    return document;
     },
     getAll: async (userId: string) => {
       const documents = await prisma.document.findMany({

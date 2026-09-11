@@ -51,12 +51,17 @@ model Role {
 }
 
 model Document {
-  id          String   @id @default(uuid())
-  title       String
-  ownerId     String
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String  @id @default(uuid())
+  title        String
+  ownerId      String
+  description  String?
+  originalName String
+  storageKey   String  @unique
+  mimeType     String
+  size         Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   owner User @relation(fields: [ownerId], references: [id])
 }

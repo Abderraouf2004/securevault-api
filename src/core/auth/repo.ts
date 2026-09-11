@@ -5,7 +5,7 @@ import type { User } from "../../modules/auth/auth.types";
 const prisma = new PrismaClient();
 
 export const AuthRepo = {
-  signup: async (data: User.signup) => {
+  signup: async (data: User.createUser) => {
      const user = await prisma.user.create({
       data: {
         name: data.name,
@@ -34,6 +34,11 @@ export const AuthRepo = {
     if (!user) return null;
     return user;
   },
+  findRoleByName: async (name: string) => {
+    return prisma.role.findUnique({
+      where: { name },
+    });
+  }  ,
 
 
 

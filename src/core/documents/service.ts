@@ -2,12 +2,36 @@ import {  validateObject } from "../../errors/validate-object";
 import type { Document } from "../../modules/documents/documents.types";
 import {  DocumentRepo } from "./repo";
 import { DocumentDTOSchema } from "../../modules/documents/documents.schema";
-
+import { detectFileType } from "../../modules/documents/document.file-validator";
+import { saveUploadedFile } from "../../modules/documents/document.storage";
+import { ApiError } from "../../errors/api-error";
 export const DocumentService = {
 
-  create: async (data: Document.Create, userId: string) => {
+  create: async (data: Document.Create,file: Express.Multer.File,userId: string) => {
+   const detectedType = detectFileType(file.buffer);
 
-   const create = await DocumentRepo.create(data, userId);
+    if (!detectedType) {
+      throw new ApiError({
+        code: "BAD_REQUEST",
+        message: "File type not allowed",
+      });
+    }
+
+    const savedFile = await saveUploadedFile(
+      file.buffer,
+      detectedType
+    );
+
+    const create = await DocumentRepo.create( 
+      {
+        title: data.title,
+        description: data.description,
+        originalName: file.originalname,
+        storageKey: savedFile.storedName,
+        mimeType: detectedType,
+        size: file.size,
+      },
+    userId);
    return validateObject<Document.DTO>(DocumentDTOSchema, create);
   },
   getAll: async (userId: string) => {

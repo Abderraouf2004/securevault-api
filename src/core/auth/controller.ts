@@ -54,23 +54,27 @@ export const AuthController = {
           });
      }),
      
-     signOut: tryCatch(async (req: Request, res: Response) => {
-          const authHeader = req.headers["authorization"] as string | undefined;
-           if (!authHeader) { throw new ApiError({ code: "UNAUTHORIZED", message: "Token missing", details: "Please provide a valid token in the Authorization header.", }); }
-            const parts = authHeader.trim().split(/\s+/);
-             if (parts.length !== 2 || parts[0] !== "Bearer") { 
-               throw new ApiError({ code: "UNAUTHORIZED", message: "Invalid Authorization format", details: "Expected format: Bearer <token>", });
-           }
-            const token = parts[1] as string; 
-            const decoded = jwt.decode(token) as { exp?: number } | null; 
-            const ttl = decoded?.exp ? decoded.exp - Math.floor(Date.now() / 1000) : 900;
-             if (ttl > 0) { 
-               const redis = redisService.getClient();
-                await redis.setEx( `blacklist:${token}`, ttl, "blacklisted", );
-             }
-            res.status(200).json({ message: "Sign Out successfully", });
-     }),
+     // signOut: tryCatch(async (req: Request, res: Response) => {
+     //      const authHeader = req.headers["authorization"] as string | undefined;
+     //       if (!authHeader) { throw new ApiError({ code: "UNAUTHORIZED", message: "Token missing", details: "Please provide a valid token in the Authorization header.", }); }
+     //        const parts = authHeader.trim().split(/\s+/);
+     //         if (parts.length !== 2 || parts[0] !== "Bearer") { 
+     //           throw new ApiError({ code: "UNAUTHORIZED", message: "Invalid Authorization format", details: "Expected format: Bearer <token>", });
+     //       }
+     //        const token = parts[1] as string; 
+     //        const decoded = jwt.decode(token) as { exp?: number } | null; 
+     //        const ttl = decoded?.exp ? decoded.exp - Math.floor(Date.now() / 1000) : 900;
+     //         if (ttl > 0) { 
+     //           const redis = redisService.getClient();
+     //            await redis.setEx( `blacklist:${token}`, ttl, "blacklisted", );
+     //         }
+     //        res.status(200).json({ message: "Sign Out successfully", });
+     // }),
      
+     signOut: tryCatch(async (req: Request, res: Response) => {
+       await AuthService.signOut(req.headers["authorization"] as string | undefined,);
+       res.status(200).json({message: "Sign Out successfully",});
+     }),
 
 
 

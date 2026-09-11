@@ -2,6 +2,8 @@ import type { NextFunction, Request, Response } from "express";
 import { ApiError } from "../errors/api-error";
 import { tokenService } from "../services/token";
 import { redisService } from "../services/redis";
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
 
 export const authMiddleware = async (
   req: Request,
@@ -59,6 +61,35 @@ export const authMiddleware = async (
   // if (authHeader) {
   //   req.token = authHeader;
   // }
+
+  next();
+};
+
+
+
+export const requireAdmin = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+) => {
+  if (!req.user) {
+    throw new ApiError({
+      code: "UNAUTHORIZED",
+      message: "Authentication required",
+    });
+  }
+
+  const adminRole = await prisma.role.findUnique({
+    where: { name: "ADMIN" },
+  });
+
+  if (!adminRole || req.user.roleId !== adminRole.id) {
+    throw new ApiError({
+      code: "FORBIDDEN",
+      message: "Access denied",
+      details: "Administrator privileges are required.",
+    });
+  }
 
   next();
 };
