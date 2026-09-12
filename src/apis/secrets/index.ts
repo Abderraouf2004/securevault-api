@@ -1,0 +1,42 @@
+import { Router } from "express";
+import { validateRequestInput } from "../../errors/validate-request-input";
+import { authMiddleware } from "../../middleware/auth";
+import { SecretController } from "../../core/secrets/controller";
+import { IdParamSchema } from "../../modules/documents/documents.schema";
+import {
+  CreateSecretSchema,
+  UpdateSecretSchema,
+} from "../../modules/secrets/secrets.schema";
+const secrets = Router();
+
+secrets.post(
+  "/",
+  authMiddleware,
+  validateRequestInput({ body: CreateSecretSchema }),
+  SecretController.create,
+);
+
+secrets.get("/", authMiddleware, SecretController.getAll);
+
+secrets.get(
+  "/:id",
+  authMiddleware,
+  validateRequestInput({ params: IdParamSchema }),
+  SecretController.getById,
+);
+
+secrets.put(
+  "/:id",
+  authMiddleware,
+  validateRequestInput({ params: IdParamSchema, body: UpdateSecretSchema }),
+  SecretController.update,
+);
+
+secrets.delete(
+  "/:id",
+  authMiddleware,
+  validateRequestInput({ params: IdParamSchema }),
+  SecretController.delete,
+);
+
+export default secrets;
