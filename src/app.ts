@@ -9,6 +9,10 @@ import session from "express-session";
 const app = express();
 
 app.use(helmet());
+app.use((req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  next();
+});
 app.use(express.json());
 // app.use(cors());
 

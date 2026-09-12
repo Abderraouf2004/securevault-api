@@ -18,8 +18,7 @@ export const authMiddleware = async (
     details: "Authorization header is missing.",
   });
 }
-  // const userId = req.headers["x-user-id"] as string;
-  // const userRole = req.headers["x-user-role"] as string;
+
 
 
   const parts = authHeader.trim().split(/\s+/);
@@ -54,13 +53,6 @@ export const authMiddleware = async (
   };
 
   req.token = token;
-  //  if (userId && userRole) {
-  //   req.user = { id: userId, roleId: userRole };
-  // }
-
-  // if (authHeader) {
-  //   req.token = authHeader;
-  // }
 
   next();
 };
