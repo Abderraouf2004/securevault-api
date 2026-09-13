@@ -28,7 +28,7 @@ export function AuthLayout({
         </div>
       </div>
 
-      <div className="relative hidden overflow-hidden bg-ink lg:flex lg:flex-col lg:justify-between lg:p-12">
+      <div className="relative hidden overflow-hidden bg-ink lg:flex lg:flex-col lg:justify-between lg:p-10">
         <div
           className="absolute inset-0 opacity-[0.07]"
           style={{
@@ -55,7 +55,6 @@ export function AuthLayout({
             ))}
           </div>
         </div>
-        <p className="relative text-xs text-white/40">AES-256-GCM encryption · Argon2id password hashing</p>
       </div>
     </div>
   );

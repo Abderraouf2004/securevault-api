@@ -17,10 +17,12 @@ interface AuthContextValue {
   user: TokenPayload | null;
   isAdmin: boolean;
   isLoading: boolean;
-  signin: (input: SigninInput) => Promise<void>;
+  // signin: (input: SigninInput) => Promise<void>;
+  signin: (input: SigninInput) => Promise<{ isAdmin: boolean }>;
   signup: (input: SignupInput) => Promise<void>;
   signout: () => Promise<void>;
-  applyTokens: (tokens: AuthTokens) => Promise<void>;
+  // applyTokens: (tokens: AuthTokens) => Promise<void>;
+  applyTokens: (tokens: AuthTokens) => Promise<boolean>;
   googleSigninUrl: string;
 }
 
@@ -41,29 +43,94 @@ async function probeIsAdmin(): Promise<boolean> {
   }
 }
 
+async function getCurrentUser() {
+  const res = await apiClient.get("/users/me");
+
+  return res.data.data;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<TokenPayload | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const hydrateFromToken = useCallback(async (accessToken: string) => {
-    const payload = decodeToken(accessToken);
-    setUser(payload);
-    if (payload) setIsAdmin(await probeIsAdmin());
-  }, []);
+  // const hydrateFromToken = useCallback(async (accessToken: string) => {
+  //   const payload = decodeToken(accessToken);
+  //   setUser(payload);
+  //   if (payload) setIsAdmin(await probeIsAdmin());
+  // }, []);
+//   const hydrateFromToken = useCallback(async (accessToken: string) => {
+//   const payload = decodeToken(accessToken);
+
+//   if (!payload) {
+//     setUser(null);
+//     setIsAdmin(false);
+//     return;
+//   }
+
+//   try {
+//     const currentUser = await getCurrentUser();
+
+//     setUser({
+//       id: currentUser.id,
+//       roleId: currentUser.roleId,
+//     });
+
+//     setIsAdmin(currentUser.roleName === "ADMIN");
+//   } catch {
+//     setUser(null);
+//     setIsAdmin(false);
+//   }
+// }, []);
+const hydrateFromToken = useCallback(async (accessToken: string) => {
+  const payload = decodeToken(accessToken);
+
+  if (!payload) {
+    setUser(null);
+    setIsAdmin(false);
+    return false;
+  }
+
+  try {
+    const currentUser = await getCurrentUser();
+
+    // setUser({
+    //   id: currentUser.id,
+    //   roleId: currentUser.roleId,
+    // });
+    setUser(currentUser);
+
+    const admin = currentUser.roleName === "ADMIN";
+    setIsAdmin(admin);
+
+    return admin;
+  } catch {
+    setUser(null);
+    setIsAdmin(false);
+    return false;
+  }
+}, []);
 
   useEffect(() => {
     const existing = tokenStore.getAccess();
     (existing ? hydrateFromToken(existing) : Promise.resolve()).finally(() => setIsLoading(false));
   }, [hydrateFromToken]);
 
+  // const applyTokens = useCallback(
+  //   async (tokens: AuthTokens) => {
+  //     tokenStore.set(tokens.accessToken, tokens.refreshToken);
+  //     await hydrateFromToken(tokens.accessToken);
+  //   },
+  //   [hydrateFromToken],
+  // );
   const applyTokens = useCallback(
-    async (tokens: AuthTokens) => {
-      tokenStore.set(tokens.accessToken, tokens.refreshToken);
-      await hydrateFromToken(tokens.accessToken);
-    },
-    [hydrateFromToken],
-  );
+  async (tokens: AuthTokens) => {
+    tokenStore.set(tokens.accessToken, tokens.refreshToken);
+
+    return await hydrateFromToken(tokens.accessToken);
+  },
+  [hydrateFromToken],
+);
 
   const signup = useCallback(
     async (input: SignupInput) => {
@@ -73,13 +140,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [applyTokens],
   );
 
+  // const signin = useCallback(
+  //   async (input: SigninInput) => {
+  //     const res = await apiClient.post<{ data: AuthTokens }>("/auth/signin", input);
+  //     await applyTokens(res.data.data);
+  //   },
+  //   [applyTokens],
+  // );
   const signin = useCallback(
-    async (input: SigninInput) => {
-      const res = await apiClient.post<{ data: AuthTokens }>("/auth/signin", input);
-      await applyTokens(res.data.data);
-    },
-    [applyTokens],
-  );
+  async (input: SigninInput) => {
+    const res = await apiClient.post<{ data: AuthTokens }>("/auth/signin", input);
+
+    const isAdmin = await applyTokens(res.data.data);
+
+    return {
+      isAdmin,
+    };
+  },
+  [applyTokens],
+);
 
   const signout = useCallback(async () => {
     try {

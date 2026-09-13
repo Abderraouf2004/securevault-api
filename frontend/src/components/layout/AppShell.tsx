@@ -62,10 +62,12 @@ export function AppShell({
 
         <div className="border-t border-line p-3">
           <div className="flex items-center gap-2.5 rounded-sm px-2 py-2">
-            <Avatar name={user?.id.slice(0, 2) ?? "U"} size={30} />
+            {/* <Avatar name={user?.id.slice(0, 2) ?? "U"} size={30} /> */}
+            <Avatar name={user?.name ?? "U"} src={user?.avatar} size={30} />
+
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-medium text-ink">{isAdmin ? "Administrator" : "Member"}</p>
-              <p className="truncate text-[11px] text-muted">{user?.id.slice(0, 8)}…</p>
+              <p className="truncate text-xs font-medium text-ink">{user?.name}</p>
+
             </div>
             <button onClick={handleSignout} title="Sign out" className="text-muted hover:text-danger">
               <LogOut size={16} />

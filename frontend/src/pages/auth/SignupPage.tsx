@@ -5,7 +5,7 @@ import { AuthLayout } from "./AuthLayout";
 import { Button, Field, Input } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { getApiErrorMessage } from "@/lib/api-client";
-
+import {GoogleIcon} from "./LoginPage"
 interface FormValues {
   name: string;
   email: string;
@@ -33,7 +33,7 @@ export default function SignupPage() {
   };
 
   return (
-    <AuthLayout title="Create your vault" subtitle="Encrypted storage for documents and credentials, in minutes.">
+    <AuthLayout title="Create your account" subtitle="">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Field label="Full name" htmlFor="name" error={errors.name?.message}>
           <Input
@@ -73,7 +73,8 @@ export default function SignupPage() {
       </div>
 
       <a href={googleSigninUrl}>
-        <Button type="button" variant="secondary" className="w-full">
+        <Button type="button" variant="secondary" className="w-full">  
+           <GoogleIcon />
           Continue with Google
         </Button>
       </a>

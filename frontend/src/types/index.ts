@@ -4,9 +4,17 @@
 export type Role = "USER" | "ADMIN";
 
 /** Payload embedded in the JWT (see src/services/token.ts). roleId is a UUID, not a role name. */
+// export interface TokenPayload {
+//   id: string;
+//   roleId: string;
+// }
 export interface TokenPayload {
   id: string;
   roleId: string;
+  name?: string;
+  email?: string;
+  roleName?: string;
+  avatar?: string;
 }
 
 /** Returned by GET /users and /users/:id (admin only). roleName is only reliable from these routes. */
@@ -15,9 +23,9 @@ export interface UserDTO {
   name: string;
   email: string;
   roleId: string;
-  roleName?: Role;
+  roleName: string;
   createdAt: string;
-  department?: string | null;
+  avatar?: string;
 }
 
 export interface DocumentDTO {

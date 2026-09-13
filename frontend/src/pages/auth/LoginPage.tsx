@@ -12,7 +12,8 @@ interface FormValues {
 }
 
 export default function LoginPage() {
-  const { signin, googleSigninUrl } = useAuth();
+  // const { signin, googleSigninUrl } = useAuth();
+  const { signin, googleSigninUrl, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [serverError, setServerError] = useState<string | null>(null);
   const {
@@ -24,8 +25,15 @@ export default function LoginPage() {
   const onSubmit = async (values: FormValues) => {
     setServerError(null);
     try {
-      await signin(values);
-      navigate("/app/documents");
+      // await signin(values);
+      // navigate("/app/documents");
+ const result = await signin(values);
+
+if (result.isAdmin) {
+  navigate("/admin");
+} else {
+  navigate("/app/documents");
+}
     } catch (err) {
       setServerError(getApiErrorMessage(err, "Couldn't sign you in. Check your details and try again."));
     }
@@ -81,7 +89,7 @@ export default function LoginPage() {
   );
 }
 
-function GoogleIcon() {
+export function GoogleIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24">
       <path

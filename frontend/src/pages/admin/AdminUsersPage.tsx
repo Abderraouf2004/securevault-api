@@ -16,7 +16,7 @@ export default function AdminUsersPage() {
 
   if (isLoading) return <PageLoader />;
 
-  const handleRoleChange = async (user: UserDTO, role: Role) => {
+  const handleRoleChange = async (user: UserDTO, role: string) => {
     try {
       await updateRole.mutateAsync({ id: user.id, role });
       notify(`${user.name} is now ${role === "ADMIN" ? "an administrator" : "a member"}.`);
@@ -57,7 +57,7 @@ export default function AdminUsersPage() {
               <tr key={user.id} className="border-b border-line last:border-0">
                 <td className="px-5 py-3.5">
                   <div className="flex items-center gap-3">
-                    <Avatar name={user.name} size={30} />
+                    <Avatar name={user?.name} src={user?.avatar} size={30} />
                     <div>
                       <p className="font-medium text-ink">{user.name}</p>
                       <p className="text-xs text-muted">{user.email}</p>
@@ -66,13 +66,13 @@ export default function AdminUsersPage() {
                 </td>
                 <td className="px-5 py-3.5">
                   <select
-                    value={user.roleName ?? "USER"}
+                    value={user.roleName }
                     disabled={user.id === currentUser?.id}
-                    onChange={(e) => handleRoleChange(user, e.target.value as Role)}
+                    onChange={(e) => handleRoleChange(user, e.target.value as string)}
                     className="rounded-sm border border-line bg-surface px-2.5 py-1.5 text-xs font-medium text-ink disabled:opacity-50"
                   >
-                    <option value="USER">Member</option>
                     <option value="ADMIN">Admin</option>
+                    <option value="USER">USER</option>
                   </select>
                 </td>
                 <td className="px-5 py-3.5 text-muted">{formatDate(user.createdAt)}</td>

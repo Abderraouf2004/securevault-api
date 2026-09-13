@@ -22,12 +22,22 @@ export default function OAuthCallbackPage() {
     if (ran.current) return;
     ran.current = true;
 
+    // const accessToken = params.get("accessToken") ?? params.get("token");
+    // if (!accessToken) {
+    //   setError("No token was returned from Google. Please try signing in again.");
+    //   return;
+    // }
+    // applyTokens({ accessToken }).then(() => navigate("/app/documents", { replace: true }));
     const accessToken = params.get("accessToken") ?? params.get("token");
-    if (!accessToken) {
-      setError("No token was returned from Google. Please try signing in again.");
-      return;
-    }
-    applyTokens({ accessToken }).then(() => navigate("/app/documents", { replace: true }));
+const refreshToken = params.get("refreshToken") ?? undefined;
+
+if (!accessToken) {
+  setError("No token was returned from Google. Please try signing in again.");
+  return;
+}
+applyTokens({ accessToken, refreshToken }).then((isAdmin) =>
+  navigate(isAdmin ? "/admin" : "/app/documents", { replace: true }),
+);
   }, [params, applyTokens, navigate]);
 
   if (error) {
