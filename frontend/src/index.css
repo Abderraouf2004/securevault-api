@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: "Inter", sans-serif;
+  }
+  body {
+    @apply bg-paper text-ink antialiased;
+  }
+  ::selection {
+    @apply bg-vault-100 text-vault-700;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-vault-400 ring-offset-2 ring-offset-paper;
+  }
+}
