@@ -2,24 +2,21 @@ import type { NextFunction, Request, Response } from "express";
 import { ApiError } from "../errors/api-error";
 import { tokenService } from "../services/token";
 import { redisService } from "../services/redis";
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import { prisma } from "../services/prisma";
 
 export const authMiddleware = async (
   req: Request,
   _res: Response,
   next: NextFunction,
 ) => {
-  const authHeader = req.headers["authorization"] as string ;
+  const authHeader = req.headers["authorization"] as string;
   if (!authHeader) {
-  throw new ApiError({
-    code: "UNAUTHORIZED",
-    message: "Authentication required",
-    details: "Authorization header is missing.",
-  });
-}
-
-
+    throw new ApiError({
+      code: "UNAUTHORIZED",
+      message: "Authentication required",
+      details: "Authorization header is missing.",
+    });
+  }
 
   const parts = authHeader.trim().split(/\s+/);
 
@@ -34,7 +31,7 @@ export const authMiddleware = async (
   const token = parts[1] as string;
 
   const payload = tokenService.verifyToken(token, false);
-   const redis = redisService.getClient();
+  const redis = redisService.getClient();
 
   const key = `blacklist:${token}`;
   const isBlacklisted = await redis.get(key);
@@ -56,8 +53,6 @@ export const authMiddleware = async (
 
   next();
 };
-
-
 
 export const requireAdmin = async (
   req: Request,

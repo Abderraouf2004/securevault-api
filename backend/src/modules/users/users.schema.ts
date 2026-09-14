@@ -1,6 +1,6 @@
 import Joi from "joi";
 
-export const CurrentUserDTOSchema = Joi.object({
+export const UserDTOSchema = Joi.object({
   id: Joi.string().uuid().required(),
   name: Joi.string().min(2).max(100).required(),
   email: Joi.string().email().required(),
@@ -11,14 +11,24 @@ export const CurrentUserDTOSchema = Joi.object({
   updatedAt: Joi.date().required(),
 }).options({ stripUnknown: true });
 
-export const UserDTOSchema = Joi.object({
+export const UserDTOSchemaUpdate = Joi.object({
   id: Joi.string().uuid().required(),
   name: Joi.string().min(2).max(100).required(),
   email: Joi.string().email().required(),
   roleId: Joi.string().uuid().required(),
-  roleName: Joi.string().optional(),
+  avatar: Joi.string().allow(null).optional(),
   createdAt: Joi.date().required(),
-  department: Joi.string().allow(null).optional(),
+  updatedAt: Joi.date().required(),
+}).options({ stripUnknown: true });
+
+export const UpdateProfileSchema = Joi.object({
+  name: Joi.string().min(2).max(100).optional(),
+  email: Joi.string().email().optional(),
+}).options({ stripUnknown: true });
+
+export const UpdatePasswordSchema = Joi.object({
+  Currentpassword: Joi.string().min(8).required(),
+  Newpassword: Joi.string().min(8).required(),
 }).options({ stripUnknown: true });
 
 export const UpdateUserRoleSchema = Joi.object({

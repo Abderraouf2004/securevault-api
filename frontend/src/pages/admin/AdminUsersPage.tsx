@@ -2,10 +2,10 @@ import { Trash2 } from "lucide-react";
 import { Avatar, Badge, Card, PageLoader } from "@/components/ui";
 import { useDeleteUser, useUpdateUserRole, useUsers } from "@/hooks/useUsers";
 import { useToast } from "@/context/ToastContext";
-import { getApiErrorMessage } from "@/lib/api-client";
 import { formatDate } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import type { Role, UserDTO } from "@/types";
+import { getApiErrorMessage, resolveAssetUrl } from "@/lib/api-client";
 
 export default function AdminUsersPage() {
   const { data: users, isLoading } = useUsers();
@@ -57,7 +57,8 @@ export default function AdminUsersPage() {
               <tr key={user.id} className="border-b border-line last:border-0">
                 <td className="px-5 py-3.5">
                   <div className="flex items-center gap-3">
-                    <Avatar name={user?.name} src={user?.avatar} size={30} />
+                    {/* <Avatar name={user?.name} src={user?.avatar} size={30} /> */}
+                    <Avatar name={user?.name} src={resolveAssetUrl(user?.avatar)} size={30} />
                     <div>
                       <p className="font-medium text-ink">{user.name}</p>
                       <p className="text-xs text-muted">{user.email}</p>

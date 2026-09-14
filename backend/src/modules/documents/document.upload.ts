@@ -9,3 +9,10 @@ export const upload = multer({
     fileSize: 10 * 1024 * 1024,
   },
 });
+
+export const avatarUpload = multer({
+  storage,
+  limits: {
+    fileSize: 2 * 1024 * 1024,
+  },
+});

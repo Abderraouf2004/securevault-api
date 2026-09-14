@@ -1,9 +1,6 @@
-import { PrismaClient } from "@prisma/client";
-
+import { prisma } from "../../services/prisma";
 import type { Document } from "../../modules/documents/documents.types";
 import { ApiError } from "../../errors/api-error";
-
-const prisma = new PrismaClient();
 
 export const DocumentRepo = {
   create: async (data: Document.Create, userId: string) => {

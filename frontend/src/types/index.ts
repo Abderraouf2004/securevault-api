@@ -65,3 +65,14 @@ export interface AuthTokens {
   accessToken: string;
   refreshToken?: string; // absent on the Google OAuth response — see AuthContext
 }
+
+export interface UpdateProfileInput {
+  name?: string;
+  email?: string;
+  avatar?: string | null;
+}
+
+export interface UpdatePasswordInput {
+  Currentpassword: string;
+  Newpassword: string;
+}

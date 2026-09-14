@@ -1,12 +1,9 @@
-import { PrismaClient } from "@prisma/client";
 import type { User } from "../../modules/auth/auth.types";
-
-
-const prisma = new PrismaClient();
+import { prisma } from "../../services/prisma";
 
 export const AuthRepo = {
   signup: async (data: User.createUser) => {
-     const user = await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         name: data.name,
         email: data.email,
@@ -14,10 +11,9 @@ export const AuthRepo = {
         roleId: data.roleId,
       },
     });
-   
+
     if (!user) throw new Error("Failed to sign up user");
     return user;
-
   },
   readByEmail: async (email: string) => {
     const user = await prisma.user.findUnique({
@@ -26,7 +22,7 @@ export const AuthRepo = {
     if (!user) return null;
     return user;
   },
-  
+
   readById: async (id: string) => {
     const user = await prisma.user.findUnique({
       where: { id },
@@ -38,8 +34,5 @@ export const AuthRepo = {
     return prisma.role.findUnique({
       where: { name },
     });
-  }  ,
-
-
-
+  },
 };

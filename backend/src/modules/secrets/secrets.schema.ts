@@ -1,7 +1,7 @@
 import Joi from "joi";
 
 export const CreateSecretSchema = Joi.object({
-  name: Joi.string().max(200).required(),
+  name: Joi.string().max(30).required(),
   Value: Joi.string().max(500).required(),
 });
 

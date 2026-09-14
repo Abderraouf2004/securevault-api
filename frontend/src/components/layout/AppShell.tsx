@@ -4,7 +4,7 @@ import { LogOut, ShieldCheck, type LucideIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar } from "@/components/ui";
 import { cn } from "@/lib/utils";
-
+import { resolveAssetUrl } from "@/lib/api-client";
 export interface NavItem {
   to: string;
   label: string;
@@ -29,8 +29,8 @@ export function AppShell({
   };
 
   return (
-    <div className="flex min-h-screen bg-paper">
-      <aside className="flex w-60 shrink-0 flex-col border-r border-line bg-surface">
+    <div className="flex h-screen overflow-hidden bg-paper">
+      <aside className="flex h-full w-60 shrink-0 flex-col border-r border-line bg-surface">
         <div className="flex items-center gap-2 px-5 py-5">
           <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-ink text-white">
             <ShieldCheck size={16} />
@@ -63,8 +63,8 @@ export function AppShell({
         <div className="border-t border-line p-3">
           <div className="flex items-center gap-2.5 rounded-sm px-2 py-2">
             {/* <Avatar name={user?.id.slice(0, 2) ?? "U"} size={30} /> */}
-            <Avatar name={user?.name ?? "U"} src={user?.avatar} size={30} />
-
+            {/* <Avatar name={user?.name ?? "U"} src={user?.avatar} size={30} /> */}
+            <Avatar name={user?.name ?? "U"} src={resolveAssetUrl(user?.avatar)} size={30} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-medium text-ink">{user?.name}</p>
 
@@ -76,7 +76,7 @@ export function AppShell({
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto">
+      <main className="h-full flex-1 overflow-y-auto">
         <div className="mx-auto max-w-5xl px-8 py-8">{children}</div>
       </main>
     </div>

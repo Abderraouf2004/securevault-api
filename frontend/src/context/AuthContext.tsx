@@ -17,11 +17,10 @@ interface AuthContextValue {
   user: TokenPayload | null;
   isAdmin: boolean;
   isLoading: boolean;
-  // signin: (input: SigninInput) => Promise<void>;
+  updateUser: (user: TokenPayload) => void;
   signin: (input: SigninInput) => Promise<{ isAdmin: boolean }>;
   signup: (input: SignupInput) => Promise<void>;
   signout: () => Promise<void>;
-  // applyTokens: (tokens: AuthTokens) => Promise<void>;
   applyTokens: (tokens: AuthTokens) => Promise<boolean>;
   googleSigninUrl: string;
 }
@@ -53,6 +52,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<TokenPayload | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const updateUser = useCallback((updatedUser: TokenPayload) => {
+  setUser(updatedUser);
+}, []);
 
   // const hydrateFromToken = useCallback(async (accessToken: string) => {
   //   const payload = decodeToken(accessToken);
@@ -176,6 +178,7 @@ const hydrateFromToken = useCallback(async (accessToken: string) => {
         user,
         isAdmin,
         isLoading,
+        updateUser,
         signin,
         signup,
         signout,

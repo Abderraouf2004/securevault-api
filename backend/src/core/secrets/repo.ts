@@ -1,8 +1,6 @@
-import { PrismaClient } from "@prisma/client";
 import { ApiError } from "../../errors/api-error";
 import { Secret } from "../../modules/secrets/secrets.types";
-
-const prisma = new PrismaClient();
+import { prisma } from "../../services/prisma";
 
 export const SecretRepo = {
   create: async (data: Secret.Create, userId: string) => {
