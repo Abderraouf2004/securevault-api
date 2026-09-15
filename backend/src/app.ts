@@ -10,6 +10,7 @@ import { redisService } from "./services/redis";
 import session from "express-session";
 import { RedisStore } from "connect-redis";
 const app = express();
+app.set("trust proxy", 1);
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
