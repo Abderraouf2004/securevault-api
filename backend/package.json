@@ -26,6 +26,7 @@
     "openid-client": "^6.8.8",
     "prisma": "^6.19.3",
     "redis": "^6.2.1"
+    
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

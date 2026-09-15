@@ -8,6 +8,11 @@ import { UsersRepo } from "./repo";
 import { saveAvatar } from "../../modules/documents/document.storage";
 import { ApiError } from "../../errors/api-error";
 import { detectFileType } from "../../modules/documents/document.file-validator";
+import {
+  buildPaginationMeta,
+  type PaginationQuery,
+} from "../../modules/shared/pagination.schema";
+
 export const UsersService = {
   getMe: async (id: string) => {
     const user = await UsersRepo.getMe(id);
@@ -23,9 +28,16 @@ export const UsersService = {
       updatedAt: user.updatedAt,
     });
   },
-  getAll: async () => {
-    const users = await UsersRepo.getAll();
-    return users.map((user) => validateObject<User.DTO>(UserDTOSchema, user));
+  // getAll: async () => {
+  //   const users = await UsersRepo.getAll();
+  //   return users.map((user) => validateObject<User.DTO>(UserDTOSchema, user));
+  // },
+  getAll: async (pagination: PaginationQuery) => {
+    const { users, total } = await UsersRepo.getAll(pagination);
+    return {
+      data: users.map((user) => validateObject<User.DTO>(UserDTOSchema, user)),
+      meta: buildPaginationMeta(total, pagination),
+    };
   },
   getUserById: async (id: string) => {
     const user = await UsersRepo.getUserById(id);

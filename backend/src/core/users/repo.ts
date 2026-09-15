@@ -2,7 +2,8 @@ import { ApiError } from "../../errors/api-error";
 import type { User } from "../../modules/auth/auth.types";
 import { hash } from "../../services/hash";
 import { prisma } from "../../services/prisma";
-
+import type { PaginationQuery } from "../../modules/shared/pagination.schema";
+import { toSkipTake } from "../../modules/shared/pagination.schema";
 export const UsersRepo = {
   getMe: async (id: string) => {
     const user = await prisma.user.findUnique({
@@ -22,9 +23,25 @@ export const UsersRepo = {
     return user;
   },
 
-  getAll: async () => {
-    const users = await prisma.user.findMany({ include: { role: true } });
-    return users.map((u) => ({ ...u, roleName: u.role.name }));
+  // getAll: async () => {
+  //   const users = await prisma.user.findMany({ include: { role: true } });
+  //   return users.map((u) => ({ ...u, roleName: u.role.name }));
+  // },
+  getAll: async (pagination: PaginationQuery) => {
+    const { skip, take } = toSkipTake(pagination);
+    const [users, total] = await prisma.$transaction([
+      prisma.user.findMany({
+        include: { role: true },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take,
+      }),
+      prisma.user.count(),
+    ]);
+    return {
+      users: users.map((u) => ({ ...u, roleName: u.role.name })),
+      total,
+    };
   },
   getUserById: async (id: string) => {
     const user = await prisma.user.findUnique({

@@ -23,9 +23,31 @@ export const validateRequestInput = ({
       Object.assign(req.params, validateObject(paramSchema, req.params));
     }
 
-    if (querySchema) {
-      Object.assign(req.query, validateObject(querySchema, req.query));
-    }
+    // if (querySchema) {
+    //   Object.assign(req.query, validateObject(querySchema, req.query));
+    // }
+    // if (querySchema) {
+    //   const validatedQuery = validateObject(querySchema, req.query);
+    //   Object.assign(req.query, validatedQuery);
+    // }
+    // if (querySchema) {
+    //   const validatedQuery = validateObject(querySchema, req.query);
 
+    //   console.log("BEFORE:", req.query);
+    //   console.log("AFTER:", validatedQuery);
+    //   console.log("TYPE:", typeof validatedQuery.limit);
+
+    //   Object.assign(req.query, validatedQuery);
+    // }
+    if (querySchema) {
+      const validatedQuery = validateObject(querySchema, req.query);
+
+      Object.defineProperty(req, "query", {
+        value: validatedQuery,
+        writable: true,
+        configurable: true,
+        enumerable: true,
+      });
+    }
     next();
   });

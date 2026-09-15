@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { tryCatch } from "../../errors/try-catch";
 import { UsersService } from "./service";
+import type { PaginationQuery } from "../../modules/shared/pagination.schema";
 
 export const UsersController = {
   getMe: tryCatch(async (req: Request, res: Response) => {
@@ -11,9 +12,14 @@ export const UsersController = {
       message: "Current user retrieved successfully",
     });
   }),
+  // getAll: tryCatch(async (req: Request, res: Response) => {
+  //   const data = await UsersService.getAll();
+  //   res.status(200).json({ data });
+  // }),
   getAll: tryCatch(async (req: Request, res: Response) => {
-    const data = await UsersService.getAll();
-    res.status(200).json({ data });
+    const pagination = req.query as unknown as PaginationQuery;
+    const { data, meta } = await UsersService.getAll(pagination);
+    res.status(200).json({ data, meta });
   }),
   getUserById: tryCatch(async (req: Request, res: Response) => {
     const data = await UsersService.getUserById(req.params.id as string);

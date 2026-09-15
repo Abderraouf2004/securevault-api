@@ -1,7 +1,8 @@
 import { ApiError } from "../../errors/api-error";
 import { Secret } from "../../modules/secrets/secrets.types";
 import { prisma } from "../../services/prisma";
-
+import type { PaginationQuery } from "../../modules/shared/pagination.schema";
+import { toSkipTake } from "../../modules/shared/pagination.schema";
 export const SecretRepo = {
   create: async (data: Secret.Create, userId: string) => {
     const secret = await prisma.secret.create({
@@ -10,13 +11,26 @@ export const SecretRepo = {
 
     return secret;
   },
-  getAll: async (userId: string) => {
-    const secrets = await prisma.secret.findMany({
-      where: {
-        ownerId: userId,
-      },
-    });
-    return secrets;
+  // getAll: async (userId: string) => {
+  //   const secrets = await prisma.secret.findMany({
+  //     where: {
+  //       ownerId: userId,
+  //     },
+  //   });
+  //   return secrets;
+  // },
+  getAll: async (userId: string, pagination: PaginationQuery) => {
+    const { skip, take } = toSkipTake(pagination);
+    const [secrets, total] = await prisma.$transaction([
+      prisma.secret.findMany({
+        where: { ownerId: userId },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take,
+      }),
+      prisma.secret.count({ where: { ownerId: userId } }),
+    ]);
+    return { secrets, total };
   },
   update: async (id: string, data: Secret.Update, userId: string) => {
     const secret = await prisma.secret.findFirst({

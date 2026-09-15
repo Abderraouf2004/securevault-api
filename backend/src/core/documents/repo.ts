@@ -1,7 +1,8 @@
 import { prisma } from "../../services/prisma";
 import type { Document } from "../../modules/documents/documents.types";
 import { ApiError } from "../../errors/api-error";
-
+import type { PaginationQuery } from "../../modules/shared/pagination.schema";
+import { toSkipTake } from "../../modules/shared/pagination.schema";
 export const DocumentRepo = {
   create: async (data: Document.Create, userId: string) => {
     const document = await prisma.document.create({
@@ -18,13 +19,26 @@ export const DocumentRepo = {
 
     return document;
   },
-  getAll: async (userId: string) => {
-    const documents = await prisma.document.findMany({
-      where: {
-        ownerId: userId,
-      },
-    });
-    return documents;
+  // getAll: async (userId: string) => {
+  //   const documents = await prisma.document.findMany({
+  //     where: {
+  //       ownerId: userId,
+  //     },
+  //   });
+  //   return documents;
+  // },
+  getAll: async (userId: string, pagination: PaginationQuery) => {
+    const { skip, take } = toSkipTake(pagination);
+    const [documents, total] = await prisma.$transaction([
+      prisma.document.findMany({
+        where: { ownerId: userId },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take,
+      }),
+      prisma.document.count({ where: { ownerId: userId } }),
+    ]);
+    return { documents, total };
   },
   update: async (id: string, data: Document.Update, userId: string) => {
     const document = await prisma.document.findFirst({

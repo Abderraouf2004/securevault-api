@@ -9,10 +9,18 @@ import {
   UpdatePasswordSchema,
 } from "../../modules/users/users.schema";
 import { avatarUpload } from "../../modules/documents/document.upload";
+import { PaginationQuerySchema } from "../../modules/shared/pagination.schema";
+
 const users = Router();
 users.get("/me", authMiddleware, UsersController.getMe);
 
-users.get("/", authMiddleware, requireAdmin, UsersController.getAll);
+users.get(
+  "/",
+  authMiddleware,
+  requireAdmin,
+  validateRequestInput({ query: PaginationQuerySchema }),
+  UsersController.getAll,
+);
 
 users.put(
   "/profile",

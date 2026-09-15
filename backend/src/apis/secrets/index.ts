@@ -7,6 +7,8 @@ import {
   CreateSecretSchema,
   UpdateSecretSchema,
 } from "../../modules/secrets/secrets.schema";
+import { PaginationQuerySchema } from "../../modules/shared/pagination.schema";
+
 const secrets = Router();
 
 secrets.post(
@@ -16,7 +18,12 @@ secrets.post(
   SecretController.create,
 );
 
-secrets.get("/", authMiddleware, SecretController.getAll);
+secrets.get(
+  "/",
+  authMiddleware,
+  validateRequestInput({ query: PaginationQuerySchema }),
+  SecretController.getAll,
+);
 
 secrets.get(
   "/:id",
