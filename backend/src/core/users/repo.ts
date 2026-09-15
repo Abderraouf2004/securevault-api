@@ -23,10 +23,6 @@ export const UsersRepo = {
     return user;
   },
 
-  // getAll: async () => {
-  //   const users = await prisma.user.findMany({ include: { role: true } });
-  //   return users.map((u) => ({ ...u, roleName: u.role.name }));
-  // },
   getAll: async (pagination: PaginationQuery) => {
     const { skip, take } = toSkipTake(pagination);
     const [users, total] = await prisma.$transaction([
@@ -56,13 +52,32 @@ export const UsersRepo = {
     }
     return { ...user, roleName: user.role.name };
   },
+  // updateUserRole: async (id: string, rolename: string) => {
+  //   const role = await prisma.role.findUnique({ where: { name: rolename } });
+  //   const user = await prisma.user.update({
+  //     where: { id },
+  //     data: { roleId: role?.id },
+  //   });
+  //   return user;
+  // },
   updateUserRole: async (id: string, rolename: string) => {
     const role = await prisma.role.findUnique({ where: { name: rolename } });
+
+    if (!role) {
+      throw new ApiError({
+        code: "BAD_REQUEST",
+        message: "Invalid role",
+        details: `Role "${rolename}" does not exist.`,
+      });
+    }
+
     const user = await prisma.user.update({
       where: { id },
-      data: { roleId: role?.id },
+      data: { roleId: role.id },
+      include: { role: true },
     });
-    return user;
+
+    return { ...user, roleName: user.role.name };
   },
   updateUserprofile: async (userId: string, data: User.UpdateProfile) => {
     const update = await prisma.user.update({
@@ -94,8 +109,27 @@ export const UsersRepo = {
     });
     return user;
   },
+  // deleteUser: async (id: string) => {
+  //   await prisma.user.delete({ where: { id } });
+  //   return { success: true };
+  // },
   deleteUser: async (id: string) => {
-    await prisma.user.delete({ where: { id } });
-    return { success: true };
+    try {
+      await prisma.user.delete({ where: { id } });
+      return { success: true };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+
+      if (message.toLowerCase().includes("foreign key constraint")) {
+        throw new ApiError({
+          code: "CONFLICT",
+          message: "Cannot delete user",
+          details:
+            "This user still owns documents or secrets. Delete or reassign those first, then try again.",
+        });
+      }
+
+      throw error;
+    }
   },
 };
