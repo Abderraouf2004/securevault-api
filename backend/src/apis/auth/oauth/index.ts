@@ -21,6 +21,7 @@ googleRouter.get("/google", async (req, res, next) => {
       codeVerifier,
     };
     console.log("OAuth session created:", req.sessionID);
+
     const authorizationUrl = oidc.buildAuthorizationUrl(config, {
       redirect_uri: process.env.GOOGLE_REDIRECT_URI!,
       response_type: "code",
@@ -30,7 +31,14 @@ googleRouter.get("/google", async (req, res, next) => {
       state,
     });
 
-    res.redirect(authorizationUrl.href);
+    // res.redirect(authorizationUrl.href);
+    req.session.save((err) => {
+      if (err) {
+        return next(err);
+      }
+
+      res.redirect(authorizationUrl.href);
+    });
   } catch (error) {
     next(error);
   }
@@ -40,11 +48,7 @@ googleRouter.get("/google/callback", async (req, res, next) => {
   try {
     const config = await getGoogleConfig();
 
-    // Everything used to bail out with res.status(x).json(...), which leaves
-    // the browser sitting on raw JSON with no way back into the SPA. Every
-    // failure path now redirects to the frontend instead, with a reason the
-    // login page could surface (e.g. read `oauthError` from the URL there).
-    const frontendUrl = process.env.FRONTEND_URL ?? "http://localhost:5173";
+    const frontendUrl = process.env.FRONTEND_URL;
     const failure = (reason: string) => {
       const url = new URL("/app/login", frontendUrl);
       url.searchParams.set("oauthError", reason);
