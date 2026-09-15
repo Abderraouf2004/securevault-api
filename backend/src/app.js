@@ -10,67 +10,54 @@ import { redisService } from "./services/redis";
 import session from "express-session";
 import { RedisStore } from "connect-redis";
 const app = express();
-app.use(
-  helmet({
+app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
-  }),
-);
+}));
 app.use((req, res, next) => {
-  res.setHeader("Cache-Control", "no-store");
-  next();
+    res.setHeader("Cache-Control", "no-store");
+    next();
 });
 app.use(express.json());
 import cors from "cors";
-app.use(
-  cors({
+app.use(cors({
     origin: process.env.FRONTEND_URL,
     credentials: true,
-  }),
-);
+}));
 const PORT = process.env.PORT || 3000;
-app.use(
-  session({
+app.use(session({
     store: new RedisStore({
-      client: redisService.getClient(),
-      prefix: "sess:",
-    }) as unknown as session.Store,
-    secret: process.env.SESSION_SECRET!,
+        client: redisService.getClient(),
+        prefix: "sess:",
+    }),
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
     },
-  }),
-);
+}));
 // app.use(apiRateLimiter);
 app.use("/uploads", express.static(path.resolve("uploads")));
 app.use("/api", router);
 app.use(notFoundHandler);
 app.use(errorHandler);
-
 // async function startServer() {
 //   await redisService.connect();
-
 //   app.listen(PORT, () => {
 //     console.log(`Server running on http://localhost:${PORT}`);
 //   });
 // }
-
 // async function startServer() {
 //   await redisService.connect();
-
 //   app.use(createApiRateLimiter());
-
 //   app.listen(PORT, () => {
 //     console.log(`Server running on http://localhost:${PORT}`);
 //   });
 // }
-
 // async function startServer() {
 //   await redisService.connect();
-
 //   app.use(
 //     session({
 //       store: new RedisStore({
@@ -87,26 +74,20 @@ app.use(errorHandler);
 //       },
 //     }),
 //   );
-
 //   app.use(createApiRateLimiter());
-
 //   app.listen(PORT, () => {
 //     console.log(`Server running on http://localhost:${PORT}`);
 //   });
 // }
-
 async function startServer() {
-  await redisService.connect();
-
-  console.log("Redis connected:", redisService.getClient().isOpen);
-
-  app.use(createApiRateLimiter());
-
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
+    await redisService.connect();
+    console.log("Redis connected:", redisService.getClient().isOpen);
+    app.use(createApiRateLimiter());
+    app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+    });
 }
 startServer().catch((error) => {
-  console.error("Failed to start server:", error);
-  process.exit(1);
+    console.error("Failed to start server:", error);
+    process.exit(1);
 });

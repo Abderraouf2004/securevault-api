@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx src/app.ts"
+    "dev": "tsx src/app.ts",
+    "build": "tsc",
+    "start": "node dist/app.js"
   },
   "keywords": [],
   "author": "",
@@ -26,7 +28,6 @@
     "openid-client": "^6.8.8",
     "prisma": "^6.19.3",
     "redis": "^6.2.1"
-    
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
@@ -37,7 +38,7 @@
     "@types/multer": "^2.2.0",
     "@types/node": "^26.4.1",
     "tsx": "^4.23.12",
-    "typescript": "^7.0.2"
+    "typescript": "^5.9.3"
   },
   "allowScripts": {
     "argon2@0.45.1": true
