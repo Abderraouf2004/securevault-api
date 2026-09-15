@@ -5,3 +5,4 @@ frontend/.env
 backend/uploads/*
 !backend/uploads/.gitkeep
 frontend/*.tsbuildinfo
+node_modules/
