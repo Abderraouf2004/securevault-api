@@ -1,9 +1,9 @@
 import { useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { FileText, Plus, Trash2, UploadCloud, Pencil, Check, X } from "lucide-react";
+import { FileText, Plus, Trash2, UploadCloud, Pencil, Check, X ,  Download} from "lucide-react";
 import { Badge, Button, EmptyState, Field, Input, PageLoader, Textarea } from "@/components/ui";
 import { Modal } from "@/components/Modal";
-import { useCreateDocument, useDeleteDocument, useDocuments, useUpdateDocument } from "@/hooks/useDocuments";
+import { useCreateDocument, useDeleteDocument, useDocuments, useUpdateDocument,useDownloadDocument } from "@/hooks/useDocuments";
 import { formatBytes, formatDate } from "@/lib/utils";
 import { useToast } from "@/context/ToastContext";
 import { getApiErrorMessage } from "@/lib/api-client";
@@ -15,9 +15,10 @@ export default function DocumentsPage() {
   const [uploadOpen, setUploadOpen] = useState(false);
   const { notify } = useToast();
   const deleteDoc = useDeleteDocument();
+ 
 
   const selected = useMemo(() => documents?.find((d) => d.id === selectedId) ?? documents?.[0] ?? null, [documents, selectedId]);
-
+  
   if (isLoading) return <PageLoader />;
 
   const handleDelete = async (doc: DocumentDTO) => {
@@ -91,7 +92,7 @@ function DocumentDetail({ doc, onDelete }: { doc: DocumentDTO; onDelete: () => v
     reset,
     formState: { isSubmitting },
   } = useForm({ defaultValues: { title: doc.title, description: doc.description ?? "" } });
-
+   const download = useDownloadDocument();
   const onSave = async (values: { title: string; description: string }) => {
     try {
       await update.mutateAsync({ id: doc.id, ...values });
@@ -119,14 +120,37 @@ function DocumentDetail({ doc, onDelete }: { doc: DocumentDTO; onDelete: () => v
           </div>
         </div>
         {!editing ? (
+          // <div className="flex gap-1">
+          //   <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
+          //     <Pencil size={14} />
+          //   </Button>
+          //   <Button variant="ghost" size="sm" onClick={onDelete}>
+          //     <Trash2 size={14} className="text-danger" />
+          //   </Button>
+          // </div>
           <div className="flex gap-1">
-            <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
-              <Pencil size={14} />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={onDelete}>
-              <Trash2 size={14} className="text-danger" />
-            </Button>
-          </div>
+  <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
+    <Pencil size={14} />
+  </Button>
+
+  <Button
+    variant="ghost"
+    size="sm"
+    onClick={() =>
+      download.mutate({
+        id: doc.id,
+        fileName: doc.originalName,
+      })
+    }
+    loading={download.isPending}
+  >
+    <Download size={14} />
+  </Button>
+
+  <Button variant="ghost" size="sm" onClick={onDelete}>
+    <Trash2 size={14} className="text-danger" />
+  </Button>
+</div>
         ) : (
           <div className="flex gap-1">
             <Button variant="ghost" size="sm" onClick={handleSubmit(onSave)} loading={isSubmitting}>
@@ -172,8 +196,8 @@ function DocumentDetail({ doc, onDelete }: { doc: DocumentDTO; onDelete: () => v
       </dl>
 
       <p className="mt-4 text-xs text-muted">
-        File preview and download aren't wired up yet — the API doesn't expose a file-serving route.
-      </p>
+  Files are securely stored in your document storage.
+</p>
     </div>
   );
 }

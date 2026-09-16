@@ -12,25 +12,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// model User {
-//   id        String   @id @default(uuid())
-//   name      String
-//   email     String   @unique
-//   password  String
-//   roleId    String
-//   role      Role     @relation(fields: [roleId], references: [id])
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   document Document[]
-// }
-
 model User {
   id    String @id @default(uuid())
   name  String
   email String @unique
 
-  password String? // يمكن يكون فارغ لحساب Google
+  password String?
   googleId String? @unique
   avatar   String?
 
@@ -42,6 +29,9 @@ model User {
 
   document Document[]
   secrets  Secret[]
+
+  @@index([roleId])
+  @@index([createdAt])
 }
 
 model Role {
@@ -52,19 +42,22 @@ model Role {
 }
 
 model Document {
-  id           String  @id @default(uuid())
-  title        String
-  ownerId      String
-  description  String?
-  originalName String
-  storageKey   String  @unique
-  mimeType     String
-  size         Int
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String                @id @default(uuid())
+  title         String
+  ownerId       String
+  description   String?
+  originalName  String
+  storageKey    String                @unique
+  mimeType      String
+  size          Int
+  storageStatus DocumentStorageStatus @default(PENDING)
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
 
   owner User @relation(fields: [ownerId], references: [id])
+
+  @@index([ownerId, createdAt(sort: Desc)])
+  @@index([storageStatus, createdAt])
 }
 
 model Secret {
@@ -76,4 +69,12 @@ model Secret {
   updatedAt DateTime @updatedAt
 
   owner User @relation(fields: [ownerId], references: [id])
+
+  @@index([ownerId, createdAt(sort: Desc)])
+}
+
+enum DocumentStorageStatus {
+  PENDING
+  READY
+  DELETING
 }

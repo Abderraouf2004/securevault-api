@@ -21,7 +21,6 @@ export namespace User {
     id: string;
     name: string;
     email: string;
-    roleId: string;
     roleName: string;
     avatar?: string;
     updatedAt: Date;

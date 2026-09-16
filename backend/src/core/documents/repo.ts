@@ -19,14 +19,7 @@ export const DocumentRepo = {
 
     return document;
   },
-  // getAll: async (userId: string) => {
-  //   const documents = await prisma.document.findMany({
-  //     where: {
-  //       ownerId: userId,
-  //     },
-  //   });
-  //   return documents;
-  // },
+
   getAll: async (userId: string, pagination: PaginationQuery) => {
     const { skip, take } = toSkipTake(pagination);
     const [documents, total] = await prisma.$transaction([

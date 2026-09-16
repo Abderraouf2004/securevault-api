@@ -28,6 +28,13 @@ document.get(
 );
 
 document.get(
+  "/:id/download",
+  authMiddleware,
+  validateRequestInput({ params: IdParamSchema }),
+  DocumentController.download,
+);
+
+document.get(
   "/:id",
   authMiddleware,
   validateRequestInput({ params: IdParamSchema }),

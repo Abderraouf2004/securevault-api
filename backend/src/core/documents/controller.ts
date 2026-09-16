@@ -46,4 +46,20 @@ export const DocumentController = {
     );
     res.status(200).json({ data, message: "Document retrieved successfully" });
   }),
+  download: tryCatch(async (req: Request, res: Response) => {
+    const file = await DocumentService.download(
+      req.params.id as string,
+      req.user?.id as string,
+    );
+
+    res.setHeader("Content-Type", file.contentType);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${file.fileName}"`,
+    );
+
+    const body = await file.body.transformToByteArray();
+
+    res.end(Buffer.from(body));
+  }),
 };

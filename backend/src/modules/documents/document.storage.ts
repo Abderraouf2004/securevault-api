@@ -1,14 +1,15 @@
-// import fs from "fs/promises";
-// import path from "path";
-// import crypto from "crypto";
+import fs from "fs/promises";
+import path from "path";
+import crypto from "crypto";
+import { uploadToMinio } from "../../services/minio";
 
-// const uploadDirectory = path.resolve("uploads");
+const uploadDirectory = path.resolve("uploads");
 
-// const extensionByMimeType: Record<string, string> = {
-//   "application/pdf": ".pdf",
-//   "image/png": ".png",
-//   "image/jpeg": ".jpg",
-// };
+const extensionByMimeType: Record<string, string> = {
+  "application/pdf": ".pdf",
+  "image/png": ".png",
+  "image/jpeg": ".jpg",
+};
 
 // export async function saveUploadedFile(buffer: Buffer, mimeType: string) {
 //   const extension = extensionByMimeType[mimeType];
@@ -33,18 +34,6 @@
 //   };
 // }
 
-import fs from "fs/promises";
-import path from "path";
-import crypto from "crypto";
-
-const uploadDirectory = path.resolve("uploads");
-
-const extensionByMimeType: Record<string, string> = {
-  "application/pdf": ".pdf",
-  "image/png": ".png",
-  "image/jpeg": ".jpg",
-};
-
 export async function saveUploadedFile(buffer: Buffer, mimeType: string) {
   const extension = extensionByMimeType[mimeType];
 
@@ -52,22 +41,14 @@ export async function saveUploadedFile(buffer: Buffer, mimeType: string) {
     throw new Error("Unsupported file type");
   }
 
-  await fs.mkdir(uploadDirectory, {
-    recursive: true,
-  });
+  const storedName = `documents/${crypto.randomUUID()}${extension}`;
 
-  const storedName = `${crypto.randomUUID()}${extension}`;
-
-  const filePath = path.join(uploadDirectory, storedName);
-
-  await fs.writeFile(filePath, buffer);
+  await uploadToMinio(storedName, buffer, mimeType);
 
   return {
     storedName,
-    filePath,
   };
 }
-
 export async function saveAvatar(buffer: Buffer, mimeType: string) {
   const extensionByMimeTypeAvatar: Record<string, string> = {
     "image/jpeg": ".jpg",

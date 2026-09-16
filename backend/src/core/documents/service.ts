@@ -9,6 +9,7 @@ import {
   buildPaginationMeta,
   type PaginationQuery,
 } from "../../modules/shared/pagination.schema";
+import { getFromMinio, deleteFromMinio } from "../../services/minio";
 
 export const DocumentService = {
   create: async (
@@ -53,12 +54,37 @@ export const DocumentService = {
     const update = await DocumentRepo.update(id, data, userId);
     return validateObject<Document.DTO>(DocumentDTOSchema, update);
   },
+
   delete: async (id: string, userId: string) => {
+    const document = await DocumentRepo.getById(id, userId);
+
+    await deleteFromMinio(document.storageKey);
+
     await DocumentRepo.delete(id, userId);
+
     return { success: true };
   },
   getById: async (id: string, userId: string) => {
     const document = await DocumentRepo.getById(id, userId);
     return validateObject<Document.DTO>(DocumentDTOSchema, document);
+  },
+  download: async (id: string, userId: string) => {
+    const document = await DocumentRepo.getById(id, userId);
+
+    const object = await getFromMinio(document.storageKey);
+
+    if (!object.Body) {
+      throw new ApiError({
+        code: "NOT_FOUND",
+        message: "File not found in storage",
+      });
+    }
+
+    return {
+      body: object.Body,
+      contentType: document.mimeType,
+      fileName: document.originalName,
+      size: document.size,
+    };
   },
 };

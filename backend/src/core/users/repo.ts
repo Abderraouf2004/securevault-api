@@ -27,8 +27,22 @@ export const UsersRepo = {
     const { skip, take } = toSkipTake(pagination);
     const [users, total] = await prisma.$transaction([
       prisma.user.findMany({
-        include: { role: true },
-        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          avatar: true,
+          createdAt: true,
+          updatedAt: true,
+          role: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
         skip,
         take,
       }),

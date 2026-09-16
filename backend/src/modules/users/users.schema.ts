@@ -4,7 +4,6 @@ export const UserDTOSchema = Joi.object({
   id: Joi.string().uuid().required(),
   name: Joi.string().min(2).max(100).required(),
   email: Joi.string().email().required(),
-  roleId: Joi.string().uuid().required(),
   roleName: Joi.string().valid("USER", "ADMIN").required(),
   avatar: Joi.string().allow(null).optional(),
   createdAt: Joi.date().required(),
