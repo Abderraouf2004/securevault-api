@@ -1,37 +1,17 @@
-import {  validateObject } from "../../errors/validate-object";
 import type { User } from "../../modules/auth/auth.types";
-import {  AuthRepo } from "./repo";
+import { AuthRepo } from "./repo";
 import { ApiError } from "../../errors/api-error";
 import { hash } from "../../services/hash";
 import { tokenService } from "../../services/token";
 import { redisService } from "../../services/redis";
 import jwt from "jsonwebtoken";
-
+import { getBearerToken } from "../../services/auth-header";
 export const AuthService = {
-
-
-   verifyToken: async (authHeader: string | undefined) => {
-    if (!authHeader) {
-      throw new ApiError({
-        code: "UNAUTHORIZED",
-        message: "Token missing",
-        details: "Please provide a valid token in the Authorization header.",
-      });
-    }
-
-    const parts = authHeader.trim().split(/\s+/);
-    if (parts.length !== 2 || parts[0] !== "Bearer") {
-      throw new ApiError({
-        code: "UNAUTHORIZED",
-        message: "Invalid Authorization format",
-        details: "Expected format: Bearer <token>",
-      });
-    }
-
-    const token = parts[1] as string;
+  verifyToken: async (authHeader: string | undefined) => {
+    const token = getBearerToken(authHeader);
     const payload = tokenService.verifyToken(token, false);
 
-    if (!payload ) {
+    if (!payload) {
       throw new ApiError({
         code: "UNAUTHORIZED",
         message: "Invalid token",
@@ -49,13 +29,13 @@ export const AuthService = {
       });
     }
 
-    const {...data } = user;
+    const { ...data } = user;
 
     return {
       user: {
         id: data.id,
         roleId: data.roleId,
-      }
+      },
     };
   },
 
@@ -73,12 +53,16 @@ export const AuthService = {
     const role = await AuthRepo.findRoleByName("USER");
 
     if (!role) {
-        throw new Error("Default USER role not found");
+      throw new Error("Default USER role not found");
     }
 
     const hashedPassword = await hash.hashPassword(data.password);
 
-    const user = await AuthRepo.signup({ ...data, password: hashedPassword ,roleId: role.id});
+    const user = await AuthRepo.signup({
+      ...data,
+      password: hashedPassword,
+      roleId: role.id,
+    });
     const payload = {
       id: user.id,
       roleId: user.roleId,
@@ -90,9 +74,6 @@ export const AuthService = {
     };
   },
 
-
-
-
   signin: async (data: User.signin) => {
     const user = await AuthRepo.readByEmail(data.email);
     if (!user || user.password == null) {
@@ -102,7 +83,10 @@ export const AuthService = {
         details: "The email provided does not match any user in our records.",
       });
     }
-    const isPasswordValid = await hash.comparePassword(data.password, user.password);
+    const isPasswordValid = await hash.comparePassword(
+      data.password,
+      user.password,
+    );
     if (!isPasswordValid) {
       throw new ApiError({
         code: "BAD_REQUEST",
@@ -111,7 +95,7 @@ export const AuthService = {
       });
     }
 
-      const payload = {
+    const payload = {
       id: user.id,
       roleId: user.roleId,
     };
@@ -122,26 +106,20 @@ export const AuthService = {
     };
   },
 
-  
   refreshToken: async (authHeader: string | undefined) => {
-    if (!authHeader) {
+    const token = getBearerToken(authHeader);
+
+    const redis = redisService.getClient();
+
+    const isBlacklisted = await redis.get(`blacklist:${token}`);
+
+    if (isBlacklisted) {
       throw new ApiError({
         code: "UNAUTHORIZED",
-        message: "Refresh token missing",
-        details: "Please provide a valid refresh token in the Authorization header.",
+        message: "Token revoked",
+        details: "This token has been revoked. Please sign in again.",
       });
     }
-
-    const parts = authHeader.trim().split(/\s+/);
-    if (parts.length !== 2 || parts[0] !== "Bearer") {
-      throw new ApiError({
-        code: "UNAUTHORIZED",
-        message: "Invalid Authorization format",
-        details: "Expected format: Bearer <token>",
-      });
-    }
-
-    const token = parts[1] as string;
     const payload = tokenService.verifyToken(token, true);
 
     if (!payload) {
@@ -164,39 +142,15 @@ export const AuthService = {
   },
 
   signOut: async (authHeader: string | undefined) => {
-  if (!authHeader) {
-    throw new ApiError({
-      code: "UNAUTHORIZED",
-      message: "Token missing",
-      details:
-        "Please provide a valid token in the Authorization header.",
-    });
-  }
+    const token = getBearerToken(authHeader);
 
-  const parts = authHeader.trim().split(/\s+/);
+    const decoded = jwt.decode(token) as { exp?: number } | null;
+    const ttl = decoded?.exp ? decoded.exp - Math.floor(Date.now() / 1000) : 0;
 
-  if (parts.length !== 2 || parts[0] !== "Bearer") {
-    throw new ApiError({
-      code: "UNAUTHORIZED",
-      message: "Invalid Authorization format",
-      details: "Expected format: Bearer <token>",
-    });
-  }
+    if (ttl > 0) {
+      const redis = redisService.getClient();
 
-  const token = parts[1] as string;
-  const decoded = jwt.decode(token) as { exp?: number } | null;
-  const ttl = decoded?.exp
-    ? decoded.exp - Math.floor(Date.now() / 1000)
-    : 0;
-
-  if (ttl > 0) {
-    const redis = redisService.getClient();
-
-    await redis.setEx(
-      `blacklist:${token}`,
-      ttl,
-      "blacklisted",
-    );
-  }
-},
+      await redis.setEx(`blacklist:${token}`, ttl, "blacklisted");
+    }
+  },
 };

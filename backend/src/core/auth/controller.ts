@@ -1,9 +1,6 @@
 import type { Request, Response } from "express";
 import { tryCatch } from "../../errors/try-catch";
 import { AuthService } from "./service";
-import jwt from "jsonwebtoken";
-import { ApiError } from "../../errors/api-error";
-import { redisService } from "../../services/redis";
 
 export const AuthController = {
   verifyToken: tryCatch(async (req: Request, res: Response) => {
