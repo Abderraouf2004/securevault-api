@@ -8,10 +8,7 @@ export const SecretController = {
     const data = await SecretService.create(req.body, req.user?.id as string);
     res.status(200).json({ data, message: "Secrets created successfully" });
   }),
-  // getAll: tryCatch(async (req: Request, res: Response) => {
-  //   const data = await SecretService.getAll(req.user?.id as string);
-  //   res.status(200).json({ data, message: "Secrets retrieved successfully" });
-  // }),
+
   getAll: tryCatch(async (req: Request, res: Response) => {
     const pagination = req.query as unknown as PaginationQuery;
     const { data, meta } = await SecretService.getAll(

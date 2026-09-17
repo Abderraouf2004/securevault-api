@@ -16,4 +16,12 @@ export namespace Secret {
     updatedAt: Date;
     createdAt: Date;
   }
+
+  export interface ListDTO {
+    id: string;
+    name: string;
+    ownerId: string;
+    updatedAt: Date;
+    createdAt: Date;
+  }
 }

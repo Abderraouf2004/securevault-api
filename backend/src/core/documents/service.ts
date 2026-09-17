@@ -10,7 +10,7 @@ import {
   type PaginationQuery,
 } from "../../modules/shared/pagination.schema";
 import { getFromMinio, deleteFromMinio } from "../../services/minio";
-
+import crypto from "crypto";
 export const DocumentService = {
   create: async (
     data: Document.Create,
@@ -26,20 +26,45 @@ export const DocumentService = {
       });
     }
 
-    const savedFile = await saveUploadedFile(file.buffer, detectedType);
+    const extensionByMimeType: Record<string, string> = {
+      "application/pdf": ".pdf",
+      "image/png": ".png",
+      "image/jpeg": ".jpg",
+    };
 
-    const create = await DocumentRepo.create(
+    const extension = extensionByMimeType[detectedType];
+
+    if (!extension) {
+      throw new ApiError({
+        code: "BAD_REQUEST",
+        message: "Unsupported file type",
+      });
+    }
+    const storageKey = `documents/${crypto.randomUUID()}${extension}`;
+
+    const document = await DocumentRepo.create(
       {
         title: data.title,
         description: data.description,
         originalName: file.originalname,
-        storageKey: savedFile.storedName,
+        storageKey,
         mimeType: detectedType,
         size: file.size,
       },
       userId,
     );
-    return validateObject<Document.DTO>(DocumentDTOSchema, create);
+
+    try {
+      await saveUploadedFile(file.buffer, detectedType, storageKey);
+
+      const readyDocument = await DocumentRepo.markReady(document.id);
+
+      return validateObject<Document.DTO>(DocumentDTOSchema, readyDocument);
+    } catch (error) {
+      // Keep the document PENDING.
+      // It can be reconciled/cleaned later.
+      throw error;
+    }
   },
   getAll: async (userId: string, pagination: PaginationQuery) => {
     const data = await DocumentRepo.getAll(userId, pagination);
@@ -55,14 +80,29 @@ export const DocumentService = {
     return validateObject<Document.DTO>(DocumentDTOSchema, update);
   },
 
+  // delete: async (id: string, userId: string) => {
+  //   const document = await DocumentRepo.getById(id, userId);
+
+  //   await deleteFromMinio(document.storageKey);
+
+  //   await DocumentRepo.delete(id, userId);
+
+  //   return { success: true };
+  // },
   delete: async (id: string, userId: string) => {
-    const document = await DocumentRepo.getById(id, userId);
+    const document = await DocumentRepo.markDeleting(id, userId);
 
-    await deleteFromMinio(document.storageKey);
+    try {
+      await deleteFromMinio(document.storageKey);
 
-    await DocumentRepo.delete(id, userId);
+      await DocumentRepo.remove(id);
 
-    return { success: true };
+      return { success: true };
+    } catch (error) {
+      // Keep the document DELETING.
+      // It can be retried/reconciled later.
+      throw error;
+    }
   },
   getById: async (id: string, userId: string) => {
     const document = await DocumentRepo.getById(id, userId);

@@ -17,3 +17,10 @@ export const SecretDTOSchema = Joi.object({
   createdAt: Joi.date().required(),
   updatedAt: Joi.date().required(),
 });
+export const SecretListDTOSchema = Joi.object({
+  id: Joi.string().uuid().required(),
+  name: Joi.string().min(3).max(30).required(),
+  ownerId: Joi.string().uuid().required(),
+  createdAt: Joi.date().required(),
+  updatedAt: Joi.date().required(),
+});

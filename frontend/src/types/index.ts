@@ -50,6 +50,14 @@ export interface SecretDTO {
   updatedAt: string;
 }
 
+export interface SecretListDTO {
+  id: string;
+  name: string;
+  ownerId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ApiSuccess<T> {
   data: T;
   message?: string;

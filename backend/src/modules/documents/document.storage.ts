@@ -18,37 +18,33 @@ const extensionByMimeType: Record<string, string> = {
 //     throw new Error("Unsupported file type");
 //   }
 
-//   await fs.mkdir(uploadDirectory, {
-//     recursive: true,
-//   });
+//   const storedName = `documents/${crypto.randomUUID()}${extension}`;
 
-//   const storedName = `${crypto.randomUUID()}${extension}`;
-
-//   const filePath = path.join(uploadDirectory, storedName);
-
-//   await fs.writeFile(filePath, buffer);
+//   await uploadToMinio(storedName, buffer, mimeType);
 
 //   return {
 //     storedName,
-//     filePath,
 //   };
 // }
 
-export async function saveUploadedFile(buffer: Buffer, mimeType: string) {
+export async function saveUploadedFile(
+  buffer: Buffer,
+  mimeType: string,
+  storageKey: string,
+) {
   const extension = extensionByMimeType[mimeType];
 
   if (!extension) {
     throw new Error("Unsupported file type");
   }
 
-  const storedName = `documents/${crypto.randomUUID()}${extension}`;
-
-  await uploadToMinio(storedName, buffer, mimeType);
+  await uploadToMinio(storageKey, buffer, mimeType);
 
   return {
-    storedName,
+    storedName: storageKey,
   };
 }
+
 export async function saveAvatar(buffer: Buffer, mimeType: string) {
   const extensionByMimeTypeAvatar: Record<string, string> = {
     "image/jpeg": ".jpg",

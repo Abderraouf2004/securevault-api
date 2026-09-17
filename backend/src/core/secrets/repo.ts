@@ -7,29 +7,53 @@ export const SecretRepo = {
   create: async (data: Secret.Create, userId: string) => {
     const secret = await prisma.secret.create({
       data: { name: data.name, Value: data.Value, ownerId: userId },
+      select: {
+        id: true,
+        name: true,
+        ownerId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
     return secret;
   },
-  // getAll: async (userId: string) => {
-  //   const secrets = await prisma.secret.findMany({
-  //     where: {
-  //       ownerId: userId,
-  //     },
-  //   });
-  //   return secrets;
+
+  // getAll: async (userId: string, pagination: PaginationQuery) => {
+  //   const { skip, take } = toSkipTake(pagination);
+  //   const [secrets, total] = await prisma.$transaction([
+  //     prisma.secret.findMany({
+  //       where: { ownerId: userId },
+  //       orderBy: { createdAt: "desc" },
+  //       skip,
+  //       take,
+  //     }),
+  //     prisma.secret.count({ where: { ownerId: userId } }),
+  //   ]);
+  //   return { secrets, total };
   // },
   getAll: async (userId: string, pagination: PaginationQuery) => {
     const { skip, take } = toSkipTake(pagination);
+
     const [secrets, total] = await prisma.$transaction([
       prisma.secret.findMany({
         where: { ownerId: userId },
+        select: {
+          id: true,
+          name: true,
+          ownerId: true,
+          createdAt: true,
+          updatedAt: true,
+        },
         orderBy: { createdAt: "desc" },
         skip,
         take,
       }),
-      prisma.secret.count({ where: { ownerId: userId } }),
+      prisma.secret.count({
+        where: { ownerId: userId },
+      }),
     ]);
+
     return { secrets, total };
   },
   update: async (id: string, data: Secret.Update, userId: string) => {
@@ -49,6 +73,13 @@ export const SecretRepo = {
     const update = await prisma.secret.update({
       where: { id },
       data: { ...data },
+      select: {
+        id: true,
+        name: true,
+        ownerId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
     return update;
   },

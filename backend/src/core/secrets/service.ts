@@ -1,5 +1,8 @@
 import { validateObject } from "../../errors/validate-object";
-import { SecretDTOSchema } from "../../modules/secrets/secrets.schema";
+import {
+  SecretDTOSchema,
+  SecretListDTOSchema,
+} from "../../modules/secrets/secrets.schema";
 import { Secret } from "../../modules/secrets/secrets.types";
 import { encryptionService } from "../../services/encryption";
 import { SecretRepo } from "./repo";
@@ -15,7 +18,7 @@ export const SecretService = {
       { ...data, Value: encryptValue },
       userId,
     );
-    return validateObject<Secret.DTO>(SecretDTOSchema, secret);
+    return validateObject<Secret.DTO>(SecretListDTOSchema, secret);
   },
   // getAll: async (userId: string) => {
   //   const secrets = await SecretRepo.getAll(userId);
@@ -30,14 +33,17 @@ export const SecretService = {
   // },
   getAll: async (userId: string, pagination: PaginationQuery) => {
     const { secrets, total } = await SecretRepo.getAll(userId, pagination);
-    const decryptedSecrets = secrets.map((secret) => ({
-      ...secret,
-      Value: encryptionService.decrypt(secret.Value),
-    }));
+    // const decryptedSecrets = secrets.map((secret) => ({
+    //   ...secret,
+    //   Value: encryptionService.decrypt(secret.Value),
+    // }));
 
     return {
-      data: decryptedSecrets.map((secret) =>
-        validateObject<Secret.DTO>(SecretDTOSchema, secret),
+      // data: decryptedSecrets.map((secret) =>
+      //   validateObject<Secret.DTO>(SecretDTOSchema, secret),
+      // )
+      data: secrets.map((secret) =>
+        validateObject(SecretListDTOSchema, secret),
       ),
       meta: buildPaginationMeta(total, pagination),
     };
@@ -47,8 +53,8 @@ export const SecretService = {
       data.Value = encryptionService.encrypt(data.Value);
     }
     const update = await SecretRepo.update(id, data, userId);
-    update.Value = await encryptionService.decrypt(update.Value);
-    return validateObject<Secret.DTO>(SecretDTOSchema, update);
+    // update.Value = await encryptionService.decrypt(update.Value);
+    return validateObject<Secret.DTO>(SecretListDTOSchema, update);
   },
   delete: async (id: string, userId: string) => {
     await SecretRepo.delete(id, userId);
