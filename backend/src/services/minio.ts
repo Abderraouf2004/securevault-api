@@ -6,7 +6,7 @@ import {
   GetObjectCommand,
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
-
+import { NodeHttpHandler } from "@smithy/node-http-handler";
 const endpoint = process.env.MINIO_ENDPOINT;
 const accessKey = process.env.MINIO_ACCESS_KEY;
 const secretKey = process.env.MINIO_SECRET_KEY;
@@ -24,6 +24,10 @@ export const minio = new S3Client({
     accessKeyId: accessKey,
     secretAccessKey: secretKey,
   },
+  requestHandler: new NodeHttpHandler({
+    connectionTimeout: 5000,
+    requestTimeout: 30000,
+  }),
 });
 
 export async function ensureMinioBucket() {

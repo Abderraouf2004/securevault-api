@@ -45,15 +45,12 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      // secure: process.env.NODE_ENV === "production",
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      // sameSite: "none",
     },
   }),
 );
-// app.use(apiRateLimiter);
-// app.use("/uploads", express.static(path.resolve("uploads")));
+
 app.get("/health", (_req, res) => {
   res.status(200).json({
     status: "ok",
@@ -91,8 +88,6 @@ async function startServer() {
 }
 
 const shutdown = async (signal: string) => {
-  // console.log(`${signal} received. Starting graceful shutdown...`);
-
   server.close(async () => {
     try {
       await prisma.$disconnect();

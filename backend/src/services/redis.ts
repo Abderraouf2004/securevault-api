@@ -13,6 +13,9 @@ class RedisService {
   private constructor() {
     this.client = createClient({
       url: REDIS_URL,
+      socket: {
+        connectTimeout: 5000,
+      },
     });
 
     this.client.on("error", (err) => {

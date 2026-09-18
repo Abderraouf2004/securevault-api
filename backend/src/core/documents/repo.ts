@@ -25,13 +25,19 @@ export const DocumentRepo = {
     const { skip, take } = toSkipTake(pagination);
     const [documents, total] = await prisma.$transaction([
       prisma.document.findMany({
-        where: { ownerId: userId, storageStatus: "READY" },
+        where: {
+          ownerId: userId,
+          storageStatus: { in: ["READY", "DELETING"] },
+        },
         orderBy: { createdAt: "desc" },
         skip,
         take,
       }),
       prisma.document.count({
-        where: { ownerId: userId, storageStatus: "READY" },
+        where: {
+          ownerId: userId,
+          storageStatus: { in: ["READY", "DELETING"] },
+        },
       }),
     ]);
     return { documents, total };
