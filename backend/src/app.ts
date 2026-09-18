@@ -1,15 +1,18 @@
 import express from "express";
-// import path from "path";
 import router from "./apis/index";
 import helmet from "helmet";
 import { errorHandler } from "./errors/error-handler";
 import { notFoundHandler } from "./errors/not-found";
-// import { apiRateLimiter } from "./middleware/rate-limit";
 import { createApiRateLimiter } from "./middleware/rate-limit";
 import { redisService } from "./services/redis";
 import session from "express-session";
 import { RedisStore } from "connect-redis";
 import { ensureMinioBucket } from "./services/minio";
+import { healthService } from "./services/health";
+import { prisma } from "./services/prisma";
+import { requestLogger } from "./middleware/request-logger";
+import { requestId } from "./middleware/request-id";
+import cors from "cors";
 const app = express();
 app.set("trust proxy", 1);
 app.use(
@@ -22,7 +25,8 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.json());
-import cors from "cors";
+app.use(requestId);
+app.use(requestLogger);
 app.use(
   cors({
     origin: process.env.FRONTEND_URL,
@@ -50,21 +54,72 @@ app.use(
 );
 // app.use(apiRateLimiter);
 // app.use("/uploads", express.static(path.resolve("uploads")));
+app.get("/health", (_req, res) => {
+  res.status(200).json({
+    status: "ok",
+    service: "securevault-api",
+    timestamp: new Date().toISOString(),
+  });
+});
+app.get("/ready", async (_req, res) => {
+  const result = await healthService.checkReadiness();
+
+  res.status(result.ready ? 200 : 503).json({
+    status: result.ready ? "ready" : "not_ready",
+    service: "securevault-api",
+    checks: result.checks,
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.use("/api", router);
 app.use(notFoundHandler);
 app.use(errorHandler);
+let server: ReturnType<typeof app.listen>;
+
 async function startServer() {
+  await prisma.$connect();
+  await prisma.$queryRaw`SELECT 1`;
   await redisService.connect();
-  console.log("Redis isOpen:", redisService.getClient().isOpen);
-  console.log("Redis isReady:", redisService.getClient().isReady);
-  await ensureMinioBucket();
 
   app.use(createApiRateLimiter());
+  await ensureMinioBucket();
 
-  app.listen(PORT, () => {
+  server = app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }
+
+const shutdown = async (signal: string) => {
+  // console.log(`${signal} received. Starting graceful shutdown...`);
+
+  server.close(async () => {
+    try {
+      await prisma.$disconnect();
+
+      const redis = redisService.getClient();
+
+      if (redis.isOpen) {
+        await redis.quit();
+      }
+
+      console.log("Graceful shutdown completed.");
+      process.exit(0);
+    } catch (error) {
+      console.error("Error during shutdown:", error);
+      process.exit(1);
+    }
+  });
+};
+
+process.on("SIGTERM", () => {
+  void shutdown("SIGTERM");
+});
+
+process.on("SIGINT", () => {
+  void shutdown("SIGINT");
+});
+
 startServer().catch((error) => {
   console.error("Failed to start server:", error);
   process.exit(1);

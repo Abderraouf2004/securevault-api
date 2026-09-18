@@ -7,6 +7,7 @@ declare global {
       };
 
       token?: string;
+      requestId: string;
     }
   }
 }

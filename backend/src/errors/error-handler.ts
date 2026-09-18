@@ -1,12 +1,7 @@
 import type { ErrorRequestHandler } from "express";
 import { ApiError } from "./api-error";
 
-export const errorHandler: ErrorRequestHandler = (
-  error,
-  _req,
-  res,
-  _next,
-) => {
+export const errorHandler: ErrorRequestHandler = (error, req, res, _next) => {
   // Known application error
   if (error instanceof ApiError) {
     return res.status(error.status).json({
@@ -16,8 +11,18 @@ export const errorHandler: ErrorRequestHandler = (
     });
   }
 
-  // Unknown / unexpected error
-  console.error("Unhandled error:", error);
+  // console.error("Unhandled error:", error);
+  console.error(
+    JSON.stringify({
+      type: "application_error",
+      requestId: req.requestId,
+      method: req.method,
+      path: req.originalUrl,
+      statusCode: req.statusCode,
+      message: error.message,
+      timestamp: new Date().toISOString(),
+    }),
+  );
 
   return res.status(500).json({
     message: "Internal server error",

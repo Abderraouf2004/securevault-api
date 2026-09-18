@@ -20,7 +20,6 @@ googleRouter.get("/google", async (req, res, next) => {
       state,
       codeVerifier,
     };
-    console.log("OAuth session created:", req.sessionID);
 
     const authorizationUrl = oidc.buildAuthorizationUrl(config, {
       redirect_uri: process.env.GOOGLE_REDIRECT_URI!,
@@ -54,8 +53,7 @@ googleRouter.get("/google/callback", async (req, res, next) => {
       url.searchParams.set("oauthError", reason);
       return res.redirect(url.toString());
     };
-    console.log("OAuth callback session:", req.sessionID);
-    console.log("OAuth session data:", req.session.oauth);
+
     const oauth = req.session.oauth;
 
     if (!oauth) {
